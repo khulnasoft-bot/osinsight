@@ -10,9 +10,8 @@
 SELECT
   SUBSTR(
     COALESCE(
-      -- TODO: Fix to not require filename!
-      REGEX_MATCH (f.filename, '(.*?)\W', 1),
-      f.filename
+      REGEX_MATCH (COALESCE(REGEX_MATCH (p0.path, '.*/(.*)', 1), p0.path), '(.*?)\W', 1),
+      COALESCE(REGEX_MATCH (p0.path, '.*/(.*)', 1), p0.path)
     ),
     0,
     6
@@ -53,7 +52,6 @@ SELECT
   p2_hash.sha256 AS p2_sha256
 FROM
   processes p0
-  LEFT JOIN file f ON p0.path = f.path
   LEFT JOIN hash p0_hash ON p0.path = p0_hash.path
   LEFT JOIN processes p1 ON p0.parent = p1.pid
   LEFT JOIN hash p1_hash ON p1.path = p1_hash.path
