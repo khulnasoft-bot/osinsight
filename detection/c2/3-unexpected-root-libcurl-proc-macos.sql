@@ -1,4 +1,4 @@
--- Find programs processes which link against libcurl, common among cross-platform malware
+-- Find root processes which link against libcurl, common among cross-platform malware
 --
 -- References:
 --  * https://objective-see.org/blog/blog_0x6C.html
@@ -43,6 +43,8 @@ WHERE
   p0.euid = 0
   AND pmm.path LIKE '%libcurl%'
   AND p0.name NOT IN (
+    'cloud-provider-kind',
+    'docker-mac-net-connect',
     'ir_agent',
     'nix',
     'nix-daemon',
