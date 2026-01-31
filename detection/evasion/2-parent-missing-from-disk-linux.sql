@@ -1,7 +1,6 @@
 -- A program where the parent PID is not on disk
 --
 -- Reveals boopkit if a child is spawned
--- TODO: Make mount namespace aware
 --
 -- false positives:
 --   * none observed
@@ -13,6 +12,7 @@
 --   * none observed
 --
 -- tags: persistent daemon
+-- platform: linux
 SELECT -- Child
   p0.pid AS p0_pid,
   p0.path AS p0_path,
@@ -40,6 +40,7 @@ FROM
   processes p0
   LEFT JOIN hash p0_hash ON p0.path = p0_hash.path
   LEFT JOIN processes p1 ON p0.parent = p1.pid
+  LEFT JOIN process_namespaces pn1 ON p1.pid = pn1.pid
   LEFT JOIN hash p1_hash ON p1.path = p1_hash.path
   LEFT JOIN processes p2 ON p1.parent = p2.pid
   LEFT JOIN hash p2_hash ON p2.path = p2_hash.path
@@ -48,6 +49,15 @@ WHERE
   AND p0.on_disk = 1
   AND NOT p0.pid IN (1, 2)
   AND NOT p1.pid IN (1, 2) -- launchd, kthreadd
+  AND pn1.mnt_namespace IN (
+    SELECT DISTINCT
+      (mnt_namespace)
+    FROM
+      process_namespaces
+      JOIN processes ON processes.pid = process_namespaces.pid
+    WHERE
+      processes.name IN ('osqueryi', 'osqueryd')
+  )
   -- Probably a software upgrade
   AND NOT p1_dirname IN (
     '/opt/google/chrome',
