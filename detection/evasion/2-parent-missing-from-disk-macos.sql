@@ -1,7 +1,7 @@
 -- A program where the parent PID is not on disk
 --
 -- Reveals boopkit if a child is spawned
--- TODO: Make mount namespace aware
+--
 --
 -- false positives:
 --   * none observed
